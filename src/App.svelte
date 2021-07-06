@@ -78,6 +78,8 @@
 			<li>To switch between work and break, hit the "Do (Work|Break)" button.</li>
 			<li>The site will save the session to your device in case you accidentally close or refresh.</li>
 			<li>Use the "Clear" button to reset your session.</li>
+			<li>"Net" is the difference between the total hours (work + break) and "work debt" (timer will be negative & red)</li>
+			<li>^ On average, "Total" and "Net" will be the same. They will only diverge when you take too long of a break!</li>
 		</ul>
 	</div>
 </main>
