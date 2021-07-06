@@ -42,7 +42,7 @@
 		let h = Math.trunc(seconds / 60 / 60);
 		let m = Math.trunc(seconds / 60);
 		let s = Math.trunc(seconds % 60);
-		return `${isNegative ? '-' : ''}${h ? (h + 'h') : ''}${m}m ${s < 10 ? '0' + s : s}s`;
+		return `${isNegative ? '-' : ''}${h ? (h + 'h ') : ''}${m}m ${s < 10 ? '0' + s : s}s`;
 	};
 </script>
 
