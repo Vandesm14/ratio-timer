@@ -46,19 +46,26 @@
 	};
 </script>
 
+<svelte:head>
+	<title>{format(timer)} | Ratio Timer</title>
+</svelte:head>
+
 <main>
 	<div>
-		<h1 class:live={!isBreak}>Work: {format(timer)}</h1>
-		<h1 class:live={isBreak}>Break: {format(timer*(ratio[1]/ratio[0]))}</h1>
+		<div class:break={isBreak} class="pointer"><span>▶</span></div>
+		<h1 class:red={timer < 0}>Work: {format(timer)}</h1>
+		<h1 class:red={timer < 0}>Break: {format(timer*(ratio[1]/ratio[0]))}</h1>
+		<br>
 		<h2>Total: {format(total)} (work + break)</h2>
 		<h2>Net: {format(total + (timer < 0 ? timer : 0))} (total - work debt)</h2>
 		<h2>Started: {time?.toLocaleTimeString() || 'null'}</h2>
+		<br>
 	</div>
-	<div>
-		Work: <input type="number" bind:value={ratio[0]}><br>
-		Break: <input type="number" bind:value={ratio[1]}>
+	<div class="controls">
+		<span>Work:</span> <input type="number" bind:value={ratio[0]}>
+		<span>Break:</span> <input type="number" bind:value={ratio[1]}>
 	</div>
-	<div>
+	<div class="buttons">
 		<button on:click={clear}>Clear</button>
 		<button on:click={toggle}>{!time ? (run ? 'Stop' : 'Start') : (run ? 'Pause' : 'Resume')}</button>
 		<button on:click={()=>isBreak = !isBreak}>{isBreak ? 'Do Work' : 'Do Break'}</button>
@@ -68,9 +75,82 @@
 <style>
 	main {
 		font-family: Arial, Helvetica, sans-serif;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		font-size: 1.2rem;
+		width: 60vh;
+		margin: 0 auto;
 	}
 
-	.live {
-		color: red;
+	.pointer {
+		display: flex;
+		position: relative;
+		top: 4.4rem;
+		left: -2rem;
+		transition: top 100ms ease-out;
+		width: 100%;
+		height: 3rem;
+		align-items: center;
+		background-color: #1e3550;
+		mix-blend-mode: screen;
+	}
+	.pointer.break {
+		top: 8.8rem;
+	}
+
+	.pointer > span {
+		margin-bottom: 2px;
+		margin-left: 0.2rem;
+	}
+
+	h1 {
+		transition: color 100ms ease-out;
+	}
+	h1.red {
+		color: rgb(255, 74, 74);
+	}
+
+	h2 {
+		color: #BABEC2;
+	}
+
+	.controls {
+		display: grid;
+		grid-template-columns: 1fr 3fr;
+	}
+
+	.buttons {
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr;
+		width: 100%;
+	}
+
+	.controls > span {
+		align-self: center;
+	}
+
+	input, button, span {
+		font-size: 1.4rem;
+	}
+
+	input, button {
+		font-family: inherit;
+		background-color: #202831;
+		border: 1px solid #818385;
+		color: white;
+		border-radius: 3px;
+		margin: 1rem 0.4rem;
+		padding: 0.4rem 0.6rem;
+		transition: background-color 100ms ease-out, border 100ms ease-out;
+		outline: none;
+	}
+
+	button {
+		cursor: pointer;
+	}
+	button:hover, input:focus {
+		background-color: #343d47;
+		border: 1px solid #c6ccd3;
 	}
 </style>
