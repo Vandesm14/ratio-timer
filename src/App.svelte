@@ -63,12 +63,22 @@
 	</div>
 	<div class="controls">
 		<span>Work:</span> <input type="number" bind:value={ratio[0]}>
+		<span>to</span>
 		<span>Break:</span> <input type="number" bind:value={ratio[1]}>
 	</div>
 	<div class="buttons">
 		<button on:click={clear}>Clear</button>
 		<button on:click={toggle}>{!time ? (run ? 'Stop' : 'Start') : (run ? 'Pause' : 'Resume')}</button>
 		<button on:click={()=>isBreak = !isBreak}>{isBreak ? 'Do Work' : 'Do Break'}</button>
+	</div>
+	<div class="info">
+		<h3>To use:</h3>
+		<ul>
+			<li>Set the ratio betweek work time and break time (default 5 to 1). Next, click "Start" to begin working!</li>
+			<li>To switch between work and break, hit the "Do (Work|Break)" button.</li>
+			<li>The site will save the session to your device in case you accidentally close or refresh.</li>
+			<li>Use the "Clear" button to reset your session.</li>
+		</ul>
 	</div>
 </main>
 
@@ -79,7 +89,7 @@
 		flex-direction: column;
 		align-items: center;
 		font-size: 1.2rem;
-		width: 60vh;
+		width: min(90vw, 60vh);
 		margin: 0 auto;
 	}
 
@@ -111,13 +121,14 @@
 		color: rgb(255, 74, 74);
 	}
 
-	h2 {
+	h2, .info {
 		color: #BABEC2;
 	}
 
 	.controls {
 		display: grid;
-		grid-template-columns: 1fr 3fr;
+		grid-template-columns: 1fr 1fr 3fr 1fr 1fr;
+		text-align: center;
 	}
 
 	.buttons {
@@ -146,11 +157,23 @@
 		outline: none;
 	}
 
+	input {
+		width: 4rem;
+	}
+
 	button {
 		cursor: pointer;
 	}
 	button:hover, input:focus {
 		background-color: #343d47;
 		border: 1px solid #c6ccd3;
+	}
+
+	.info {
+		margin-top: 1rem;
+	}
+
+	.info li {
+		margin: 0.6rem 0;
 	}
 </style>
