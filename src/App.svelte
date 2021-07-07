@@ -47,7 +47,7 @@
 </script>
 
 <svelte:head>
-	<title>{format(timer)} | Ratio Timer</title>
+	<title>{format(isBreak ? timer*(ratio[1]/ratio[0]) : timer) + (isBreak ? ' - Break ' : ' - Work ')} | Ratio Timer</title>
 </svelte:head>
 
 <main>
@@ -75,10 +75,7 @@
 		<summary>Edit Time</summary>
 		<div>
 			<input type="number" bind:value={timer} style="width: 40%">
-			<p class="red">Warning: Editing the time will NOT update the Total and Net readouts. Be sure to pause/stop the timer before editing the time</p>
-		</div>
-	</details>
-	<div class="info">
+iv class="info">
 		<h3>To use:</h3>
 		<ul>
 			<li>Set the ratio betweek work time and break time (default 5 to 1). Next, click "Start" to begin working!</li>
