@@ -75,6 +75,9 @@
 		<summary>Edit Time</summary>
 		<div>
 			<input type="number" bind:value={timer} style="width: 40%">
+			<p class="red">Warning: Editing the time will NOT update the Total and Net readouts. Be sure to pause/stop the timer before editing the time</p>
+		</div>
+	</details>
 	<div class="info">
 		<h3>To use:</h3>
 		<ul>
