@@ -1,87 +1,80 @@
-<script>
-	let interval;
-	let run = false;
-	let isBreak = false;
+<script lang="ts">
+	let isPaused = true;
+	let isWorking = true;
 
-	let time = localStorage.getItem('time') ? new Date(localStorage.getItem('time')) : null;
-	$: time ? localStorage.setItem('time', ''+time) : localStorage.removeItem('time');
+	let workRatio = 1;
+	let breakRatio = 5;
 
-	let total = +localStorage.getItem('total') || 0;
-	$: localStorage.setItem('total', total.toString());
+	let totalWorkTime = 0;
+	let totalBreakTime = 0;
 
-	let timer = +localStorage.getItem('timer') || 0;
-	$: localStorage.setItem('timer', timer.toString());
+	$: totalTime = totalWorkTime + totalBreakTime;
+	$: relativeTime = (totalWorkTime - totalBreakTime);
 
-	let ratio = localStorage.getItem('ratio') ? JSON.parse(localStorage.getItem('ratio')) : [5, 1];
-	$: localStorage.setItem('ratio', JSON.stringify(ratio));
+	$: relativeWorkTime = relativeTime * workRatio;
+	$: relativeBreakTime = relativeTime / breakRatio;
 
-	const toggle = () => {
-		if (run) { // Stop timer
-			clearInterval(interval);
-		} else { // Start timer
-			if (!time) time = new Date();
-			interval = setInterval(() => {
-				if (isBreak) timer -= ratio[0] / ratio[1];
-				else timer += 1;
-				total += 1;
-			}, 1000);
+	setInterval(() => {
+		if(!isPaused) {
+			if(isWorking) totalWorkTime++;
+			else totalBreakTime++;
 		}
-		run = !run;
-	};
+	}, 1000);
 
 	const clear = () => {
-		timer = 0;
-		total = 0;
-		time = null;
+		totalWorkTime = 0;
+		totalBreakTime = 0;
 	};
 
-	const format = (seconds) => {
-		let isNegative = seconds < 0;
+	const format = (seconds: number) => {
+		const isNegative = seconds < 0;
 		seconds = Math.abs(seconds);
 
-		let h = Math.trunc(seconds / 60 / 60);
-		let m = Math.trunc(seconds / 60);
-		let s = Math.trunc(seconds % 60);
+		const h = Math.trunc(seconds / 60 / 60);
+		const m = Math.trunc(seconds / 60 % 60);
+		const s = Math.trunc(seconds % 60);
 		return `${isNegative ? '-' : ''}${h ? (h + 'h ') : ''}${m}m ${s < 10 ? '0' + s : s}s`;
 	};
 </script>
 
 <svelte:head>
-	<title>{format(isBreak ? timer*(ratio[1]/ratio[0]) : timer) + (isBreak ? ' - Break ' : ' - Work ')} | Ratio Timer</title>
+	<title>{format(isWorking ? relativeWorkTime : relativeBreakTime) + (isWorking ? ' - Work ' : ' - Break ')} | Ratio Timer</title>
 </svelte:head>
 
 <main>
 	<div>
-		<div class:break={isBreak} class="pointer"><span>▶</span></div>
-		<h1 class:red={timer < 0}>Work: {format(timer)}</h1>
-		<h1 class:red={timer < 0}>Break: {format(timer*(ratio[1]/ratio[0]))}</h1>
+		<div class:break={!isWorking} class="pointer"><span>▶</span></div>
+		<h1 class:red={relativeWorkTime < 0}>Work: {format(relativeWorkTime)}</h1>
+		<h1 class:red={relativeBreakTime < 0}>Break: {format(relativeBreakTime)}</h1>
 		<br>
-		<h2>Total: {format(total)} (work + break)</h2>
-		<h2>Net: {format(total + (timer < 0 ? timer : 0))} (total - work debt)</h2>
-		<h2>Started: {time?.toLocaleTimeString() || 'null'}</h2>
+		<h2>Total: {format(totalTime)} (work + break)</h2>
+		<h2>Net: {format(totalTime + (relativeWorkTime < 0 ? relativeWorkTime : 0))} (total - work debt)</h2>
+		<!-- <h2>Started: {time?.toLocaleTimeString() || 'null'}</h2> -->
 		<br>
 	</div>
 	<div class="controls">
-		<span>Work:</span> <input type="number" bind:value={ratio[0]}>
+		<span>Work:</span> <input type="number" bind:value={workRatio}>
 		<span>to</span>
-		<span>Break:</span> <input type="number" bind:value={ratio[1]}>
+		<span>Break:</span> <input type="number" bind:value={breakRatio}>
 	</div>
 	<div class="buttons">
 		<button on:click={clear}>Clear</button>
-		<button on:click={toggle}>{!time ? (run ? 'Stop' : 'Start') : (run ? 'Pause' : 'Resume')}</button>
-		<button on:click={()=>isBreak = !isBreak}>{isBreak ? 'Do Work' : 'Do Break'}</button>
+		<button on:click={() => isPaused = !isPaused}>{isPaused ? "Start" :  "Stop"}</button>
+		<button on:click={() => isWorking = !isWorking}>{isWorking ? 'Do Break' : 'Do Work'}</button>
 	</div>
 	<details style="text-align: center;">
-		<summary>Edit Time</summary>
+		<summary>Edit Time Worked</summary>
 		<div>
-			<input type="number" bind:value={timer} style="width: 40%">
-			<p class="red">Warning: Editing the time will NOT update the Total and Net readouts. Be sure to pause/stop the timer before editing the time</p>
+			<input type="number" disabled={!isPaused} bind:value={totalWorkTime} style="width: 40%">
+			{#if !isPaused}
+				<p>Pause the timer to edit the time.</p>
+			{/if}
 		</div>
 	</details>
 	<div class="info">
 		<h3>To use:</h3>
 		<ul>
-			<li>Set the ratio betweek work time and break time (default 5 to 1). Next, click "Start" to begin working!</li>
+			<li>Set the ratio betweek work time and break time (default 1 to 5). Next, click "Start" to begin working!</li>
 			<li>To switch between work and break, hit the "Do (Work|Break)" button.</li>
 			<li>The site will save the session to your device in case you accidentally close or refresh.</li>
 			<li>Use the "Clear" button to reset your session.</li>
