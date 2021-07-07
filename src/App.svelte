@@ -75,7 +75,7 @@
 		<summary>Edit Time</summary>
 		<div>
 			<input type="number" bind:value={timer} style="width: 40%">
-iv class="info">
+	<div class="info">
 		<h3>To use:</h3>
 		<ul>
 			<li>Set the ratio betweek work time and break time (default 5 to 1). Next, click "Start" to begin working!</li>
