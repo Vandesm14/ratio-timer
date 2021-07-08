@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	let interval;
 	let run = false;
 	let isBreak = false;
@@ -14,11 +14,26 @@
 
 	let ratio = localStorage.getItem('ratio') ? JSON.parse(localStorage.getItem('ratio')) : [5, 1];
 	$: localStorage.setItem('ratio', JSON.stringify(ratio));
+	
+	let logs: Log[] = localStorage.getItem('logs') ? JSON.parse(localStorage.getItem('logs')) : [];
+	$: localStorage.setItem('logs', JSON.stringify(logs));
+
+	interface Log {
+		timestamp: Date,
+		timer: number,
+		action: 'break' | 'work' | 'start' | 'stop' | 'clear'
+	};
+
+	const addLog = (action: Log['action']) => {
+		logs = [{timestamp: new Date(), timer, action}, ...logs];
+	};
 
 	const toggle = () => {
 		if (run) { // Stop timer
+			addLog('stop');
 			clearInterval(interval);
 		} else { // Start timer
+			addLog('start');
 			if (!time) time = new Date();
 			interval = setInterval(() => {
 				if (isBreak) timer -= ratio[0] / ratio[1];
@@ -30,6 +45,7 @@
 	};
 
 	const clear = () => {
+		addLog('clear');
 		timer = 0;
 		total = 0;
 		time = null;
@@ -44,6 +60,9 @@
 		let s = Math.trunc(seconds % 60);
 		return `${isNegative ? '-' : ''}${h ? (h + 'h ') : ''}${m}m ${s < 10 ? '0' + s : s}s`;
 	};
+
+
+	const switchMode = ()=>isBreak = !isBreak;
 </script>
 
 <svelte:head>
@@ -69,13 +88,21 @@
 	<div class="buttons">
 		<button on:click={clear}>Clear</button>
 		<button on:click={toggle}>{!time ? (run ? 'Stop' : 'Start') : (run ? 'Pause' : 'Resume')}</button>
-		<button on:click={()=>isBreak = !isBreak}>{isBreak ? 'Do Work' : 'Do Break'}</button>
+		<button on:click={switchMode}>{isBreak ? 'Do Work' : 'Do Break'}</button>
 	</div>
 	<details style="text-align: center;">
 		<summary>Edit Time</summary>
 		<div>
 			<input type="number" bind:value={timer} style="width: 40%">
 			<p class="red">Warning: Editing the time will NOT update the Total and Net readouts. Be sure to pause/stop the timer before editing the time</p>
+		</div>
+	</details>
+	<details class="logs">
+		<summary>Logs</summary>
+		<div>
+			{#each logs as log}
+				<p>{new Date(log.timestamp).toLocaleTimeString()} - Action: "{log.action}" with the Time: {format(log.timer)}</p>
+			{/each}
 		</div>
 	</details>
 	<div class="info">
@@ -176,6 +203,11 @@
 	button:hover, input:focus {
 		background-color: #343d47;
 		border: 1px solid #c6ccd3;
+	}
+
+	.logs {
+		text-align: center;
+		margin-top: 1rem;
 	}
 
 	.info {
