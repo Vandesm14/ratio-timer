@@ -141,9 +141,9 @@
 		<br>
 	</div>
 	<div class="controls">
-		<span>Work:</span> <input type="number" bind:value={ratio[0]}>
+		<span>Work:</span> <input type="number" min="1" bind:value={ratio[0]}>
 		<span>to</span>
-		<span>Break:</span> <input type="number" bind:value={ratio[1]}>
+		<span>Break:</span> <input type="number" min="1" bind:value={ratio[1]}>
 	</div>
 	<div class="buttons">
 		<button on:click={clear}>Clear</button>
@@ -153,8 +153,8 @@
 	<details style="text-align: center;">
 		<summary>Edit Time</summary>
 		<div>
-			Work: <input type="number" on:change={()=>edit('work')} bind:value={input[0]}>m <input type="number" on:change={()=>edit('work')} bind:value={input[1]}>s<br>
-			Break: <input type="number" on:change={()=>edit('break')} bind:value={input[2]}>m <input type="number" on:change={()=>edit('break')} bind:value={input[3]}>s
+			Work: <input type="number" min="0" on:change={()=>edit('work')} bind:value={input[0]}>m <input type="number" min="0" on:change={()=>edit('work')} bind:value={input[1]}>s<br>
+			Break: <input type="number" min="0" on:change={()=>edit('break')} bind:value={input[2]}>m <input type="number" min="0" on:change={()=>edit('break')} bind:value={input[3]}>s
 			<p>Be sure to pause/stop the timer before editing the time!</p>
 		</div>
 	</details>
