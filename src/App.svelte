@@ -88,14 +88,14 @@
 	};
 
 	const clear = () => {
-		logs = [];
-		addLog('clear');
 		workTime = 0;
 		breakTime = 0;
 		time = null;
 		debt = false;
     input = [0, 0, 0, 0];
     toggle(false);
+		logs = [];
+		addLog('clear');
 	};
 
 	const format = (seconds, hideAll = false) => {
