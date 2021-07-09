@@ -50,7 +50,7 @@
 	interface Log {
 		timestamp: Date,
 		timers: [number, number],
-		action: 'break' | 'work' | 'start' | 'stop' | 'clear'
+		action: 'break' | 'work' | 'start' | 'stop' | 'clear' | 'edit'
 	};
 
 	const addLog = (action: Log['action']) => {
@@ -118,6 +118,8 @@
 		const s = input[i*2 + 1];
 		if (type === 'work') workTime = m*60 + s;
 		else if (type === 'break') breakTime = m*60 + s;
+		
+		addLog('edit');
 	};
 
 	update();
