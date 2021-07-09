@@ -57,7 +57,8 @@
 		logs = [{timestamp: new Date(), timers: [workTime, breakTime], action}, ...logs];
 	};
 
-	const toggle = () => {
+	const toggle = (override = !run) => {
+    run = !override;
 		if (run) { // Stop timer
 			addLog('stop');
 			clearInterval(interval);
@@ -94,6 +95,7 @@
 		time = null;
 		debt = false;
     input = [0, 0, 0, 0];
+    toggle(false);
 	};
 
 	const format = (seconds, hideAll = false) => {
@@ -145,7 +147,7 @@
 	</div>
 	<div class="buttons">
 		<button on:click={clear}>Clear</button>
-		<button on:click={toggle}>{!time ? (run ? 'Stop' : 'Start') : (run ? 'Pause' : 'Resume')}</button>
+		<button on:click={()=>toggle()}>{!time ? (run ? 'Stop' : 'Start') : (run ? 'Pause' : 'Resume')}</button>
 		<button on:click={switchMode}>{isBreak ? 'Do Work' : 'Do Break'}</button>
 	</div>
 	<details style="text-align: center;">
