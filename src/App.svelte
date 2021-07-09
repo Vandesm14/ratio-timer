@@ -2,6 +2,13 @@
 	let interval;
 	let run = false;
 	let isBreak = false;
+	let debt = false;
+
+	let input = [0, 0, 0, 0];
+
+	// if (localStorage.getItem('timer')) {
+	// 	alert('It looks like you\'re using an older verison. I\'ll do my best to convert your sessuib!');
+	// }
 
 	let time = localStorage.getItem('time') ? new Date(localStorage.getItem('time')) : null;
 	$: time ? localStorage.setItem('time', ''+time) : localStorage.removeItem('time');
@@ -9,8 +16,11 @@
 	let total = +localStorage.getItem('total') || 0;
 	$: localStorage.setItem('total', total.toString());
 
-	let timer = +localStorage.getItem('timer') || 0;
-	$: localStorage.setItem('timer', timer.toString());
+	// let timer = +localStorage.getItem('timer') || 0;
+	// $: localStorage.setItem('timer', timer.toString());
+
+	let [workTime, breakTime] = localStorage.getItem('timers') ? JSON.parse(localStorage.getItem('timers')) : [0, 0];
+	$: localStorage.setItem('timers', JSON.stringify([workTime, breakTime]));
 
 	let ratio = localStorage.getItem('ratio') ? JSON.parse(localStorage.getItem('ratio')) : [5, 1];
 	$: localStorage.setItem('ratio', JSON.stringify(ratio));
@@ -20,12 +30,12 @@
 
 	interface Log {
 		timestamp: Date,
-		timer: number,
+		timers: [number, number],
 		action: 'break' | 'work' | 'start' | 'stop' | 'clear'
 	};
 
 	const addLog = (action: Log['action']) => {
-		logs = [{timestamp: new Date(), timer, action}, ...logs];
+		logs = [{timestamp: new Date(), timers: [workTime, breakTime], action}, ...logs];
 	};
 
 	const toggle = () => {
@@ -36,47 +46,78 @@
 			addLog('start');
 			if (!time) time = new Date();
 			interval = setInterval(() => {
-				if (isBreak) timer -= ratio[0] / ratio[1];
-				else timer += 1;
-				total += 1;
+				if (isBreak) {
+					breakTime += 1;
+				} else {
+					workTime += 1;
+				}
+
+				update();
 			}, 1000);
 		}
 		run = !run;
 	};
 
-	const clear = () => {
-		addLog('clear');
-		timer = 0;
-		total = 0;
-		time = null;
+	$: debt = (workTime*ratio[1]) < (breakTime*ratio[0]);
+	
+	const update = () => {
+		input[0] = Math.trunc(workTime/60);
+		input[1] = Math.trunc(workTime%60);
+		input[2] = Math.trunc(breakTime/60);
+		input[3] = Math.trunc(breakTime%60);
 	};
 
-	const format = (seconds) => {
+	const clear = () => {
+		logs = [];
+		addLog('clear');
+		workTime = 0;
+		breakTime = 0;
+		total = 0;
+		time = null;
+		debt = false;
+	};
+
+	const format = (seconds, hideAll = false) => {
 		let isNegative = seconds < 0;
 		seconds = Math.abs(seconds);
 
 		let h = Math.trunc(seconds / 60 / 60);
-		let m = Math.trunc(seconds / 60);
+		let m = Math.trunc(seconds / 60 % 60);
 		let s = Math.trunc(seconds % 60);
-		return `${isNegative ? '-' : ''}${h ? (h + 'h ') : ''}${m}m ${s < 10 ? '0' + s : s}s`;
+
+		if (hideAll) return `${isNegative ? '-' : ''}${h ? (h + 'h ') : ''}${m ? m + 'm ' : ''}${s || 0}s`;
+		else return `${isNegative ? '-' : ''}${h ? (h + 'h ') : ''}${m}m ${s < 10 ? '0' + s : s}s`;
 	};
 
+	const switchMode = () => {
+		isBreak = !isBreak;
+		addLog(isBreak ? 'break' : 'work');
+	};
+	
+	const edit = (type: 'work' | 'break') => {
+		const i = Number(type === 'break');
+		const m = input[i*2];
+		const s = input[i*2 + 1];
+		let old = type === 'work' ? workTime : breakTime;
+		if (type === 'work') workTime = m*60 + s;
+		else if (type === 'break') breakTime = m*60 + s;
+	};
 
-	const switchMode = ()=>isBreak = !isBreak;
-</script>
+	update();
+</script> 
 
 <svelte:head>
-	<title>{format(isBreak ? timer*(ratio[1]/ratio[0]) : timer) + (isBreak ? ' - Break ' : ' - Work ')} | Ratio Timer</title>
+	<title>{format(isBreak ? breakTime*(ratio[1]/ratio[0]) : workTime) + (isBreak ? ' - Break ' : ' - Work ')} | Ratio Timer</title>
 </svelte:head>
 
 <main>
 	<div>
 		<div class:break={isBreak} class="pointer"><span>▶</span></div>
-		<h1 class:red={timer < 0}>Work: {format(timer)}</h1>
-		<h1 class:red={timer < 0}>Break: {format(timer*(ratio[1]/ratio[0]))}</h1>
+		<h1 class:red={debt}>Work: {format(workTime)} {(breakTime*ratio[0]) - (workTime*ratio[1]) > 0 ? `(-${format((breakTime*ratio[0]) - (workTime*ratio[1]), true)})` : ''}</h1>
+		<h1 class:red={debt}>Break: {format(breakTime)} {(workTime/ratio[0])*ratio[1] - breakTime >= 1 ? `(+${format((workTime/ratio[0])*ratio[1] - breakTime, true)})` : ''}</h1>
 		<br>
-		<h2>Total: {format(total)} (work + break)</h2>
-		<h2>Net: {format(total + (timer < 0 ? timer : 0))} (total - work debt)</h2>
+		<h2>Total: {format(workTime + breakTime)} (work + break)</h2>
+		<h2>Net: {format(workTime - breakTime)} (work - break)</h2>
 		<h2>Started: {time?.toLocaleTimeString() || 'null'}</h2>
 		<br>
 	</div>
@@ -93,15 +134,16 @@
 	<details style="text-align: center;">
 		<summary>Edit Time</summary>
 		<div>
-			<input type="number" bind:value={timer} style="width: 40%">
-			<p class="red">Warning: Editing the time will NOT update the Total and Net readouts. Be sure to pause/stop the timer before editing the time</p>
+			Work: <input type="number" on:change={()=>edit('work')} bind:value={input[0]}>m <input type="number" on:change={()=>edit('work')} bind:value={input[1]}>s<br>
+			Break: <input type="number" on:change={()=>edit('break')} bind:value={input[2]}>m <input type="number" on:change={()=>edit('break')} bind:value={input[3]}>s
+			<p>Be sure to pause/stop the timer before editing the time!</p>
 		</div>
 	</details>
 	<details class="logs">
 		<summary>Logs</summary>
 		<div>
 			{#each logs as log}
-				<p>{new Date(log.timestamp).toLocaleTimeString()} - Action: "{log.action}" with the Time: {format(log.timer)}</p>
+				<p>{new Date(log.timestamp).toLocaleTimeString()} - Action: "{log.action}"<br>{format(log.timers[0])} work<br>{format(log.timers[1])} break</p>
 			{/each}
 		</div>
 	</details>
@@ -135,11 +177,11 @@
 		top: 4.4rem;
 		left: -2rem;
 		transition: top 100ms ease-out;
-		width: 100%;
+		width: calc(100% + 3rem);
 		height: 3rem;
 		align-items: center;
-		background-color: #1e3550;
-		mix-blend-mode: screen;
+		background-color: #355273;
+		z-index: -1;
 	}
 	.pointer.break {
 		top: 8.8rem;
