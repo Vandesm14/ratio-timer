@@ -93,6 +93,7 @@
 		breakTime = 0;
 		time = null;
 		debt = false;
+    input = [0, 0, 0, 0];
 	};
 
 	const format = (seconds, hideAll = false) => {
@@ -130,7 +131,7 @@
 <main>
 	<div>
 		<div class:break={isBreak} class="pointer"><span>▶</span></div>
-		<h1 class:red={debt}>Work: {format(workTime)} {(breakTime*ratio[0]) - (workTime*ratio[1]) > 0 ? `(-${format((breakTime*ratio[0]) - (workTime*ratio[1]), true)})` : ''}</h1>
+		<h1 class:red={debt}>Work: {format(workTime)} {(breakTime*ratio[0]) - (workTime*ratio[1]) > 0 ? `(-${format((breakTime*(ratio[0]/ratio[1])) - workTime, true)})` : ''}</h1>
 		<h1 class:red={debt}>Break: {format(breakTime)} {(workTime/ratio[0])*ratio[1] - breakTime >= 1 ? `(+${format((workTime/ratio[0])*ratio[1] - breakTime, true)})` : ''}</h1>
 		<br>
 		<h2>Total: {format(workTime + breakTime)} (work + break)</h2>
