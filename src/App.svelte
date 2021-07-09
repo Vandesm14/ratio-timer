@@ -188,12 +188,14 @@
 		</div>
 	</details>
 	<div class="info">
-		<h3>To use:</h3>
+		<h3>Info:</h3>
 		<ul>
 			<li>Set the ratio betweek work time and break time (default 5 to 1). Next, click "Start" to begin working!</li>
 			<li>To switch between work and break, hit the "Do (Work|Break)" button.</li>
-			<li>The site will save the session to your device in case you accidentally close or refresh.</li>
+			<li>Your session will be saved to your device in case you accidentally close or refresh!</li>
 			<li>Use the "Clear" button to reset your session.</li>
+      <li>"Total" reports both the total time and the total time plus extra break time (inside the parenthesis)</li>
+			<li>Use the "Trim" button under "Edit Time" to condense your time down to unbalanced time (remove time that conforms to the ratio).</li>
 		</ul>
 	</div>
 </main>
