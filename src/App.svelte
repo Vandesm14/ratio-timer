@@ -131,9 +131,17 @@
     breakTime = b;
     logs = logs.slice(i);
     addLog('restore');
+		update();
   }
 
 	update();
+
+	const trimHours = () => {
+		addLog('trim');
+		workTime = ((workTime/ratio[0])*ratio[1] - breakTime)*(ratio[0]/ratio[1]);
+		breakTime = 0;
+		update();
+	};
 </script> 
 
 <svelte:head>
@@ -146,7 +154,7 @@
 		<h1 class:red={debt}>Work: {format(workTime)} {(breakTime*ratio[0]) - (workTime*ratio[1]) > 0 ? `(-${format((breakTime*(ratio[0]/ratio[1])) - workTime, true)})` : ''}</h1>
 		<h1 class:red={debt}>Break: {format(breakTime)} {(workTime/ratio[0])*ratio[1] - breakTime >= 1 ? `(+${format((workTime/ratio[0])*ratio[1] - breakTime, true)})` : ''}</h1>
 		<br>
-		<h2>Total: {format(workTime + breakTime)} (work + break)</h2>
+		<h2>Total: {format(workTime + breakTime)} ({format(workTime + breakTime + (workTime/ratio[0])*ratio[1] - breakTime)})</h2>
 		<h2>Started: {time?.toLocaleTimeString() || 'null'}</h2>
 		<br>
 	</div>
@@ -166,6 +174,7 @@
 			Work: <input type="number" min="0" on:change={()=>edit('work')} bind:value={input[0]}>m <input type="number" min="0" on:change={()=>edit('work')} bind:value={input[1]}>s<br>
 			Break: <input type="number" min="0" on:change={()=>edit('break')} bind:value={input[2]}>m <input type="number" min="0" on:change={()=>edit('break')} bind:value={input[3]}>s
 			<p>Be sure to pause/stop the timer before editing the time!</p>
+			<button on:click={()=>{if (confirm('Are you sure you want to trim your work and break hours?')) trimHours()}}>Trim</button>
 		</div>
 	</details>
 	<details class="logs">
@@ -261,7 +270,7 @@
 		margin: 1rem 0.4rem;
 		padding: 0.4rem 0.6rem;
 		transition: background-color 100ms ease-out, border 100ms ease-out;
-		/* outline: none; */
+		outline: none;
 	}
 
 	input {
