@@ -6,18 +6,8 @@
 
 	let input = [0, 0, 0, 0];
 
-	// if (localStorage.getItem('timer')) {
-	// 	alert('It looks like you\'re using an older verison. I\'ll do my best to convert your sessuib!');
-	// }
-
 	let time = localStorage.getItem('time') ? new Date(localStorage.getItem('time')) : null;
 	$: time ? localStorage.setItem('time', ''+time) : localStorage.removeItem('time');
-
-	let total = +localStorage.getItem('total') || 0;
-	$: localStorage.setItem('total', total.toString());
-
-	// let timer = +localStorage.getItem('timer') || 0;
-	// $: localStorage.setItem('timer', timer.toString());
 
 	let [workTime, breakTime] = localStorage.getItem('timers') ? JSON.parse(localStorage.getItem('timers')) : [0, 0];
 	$: localStorage.setItem('timers', JSON.stringify([workTime, breakTime]));
@@ -27,6 +17,35 @@
 	
 	let logs: Log[] = localStorage.getItem('logs') ? JSON.parse(localStorage.getItem('logs')) : [];
 	$: localStorage.setItem('logs', JSON.stringify(logs));
+
+	if (localStorage.getItem('total')) {
+		let total = +localStorage.getItem('total');
+		let timer = +localStorage.getItem('timer');
+		alert('It looks like you\'re using an older verison. I\'ll do my best to convert your session!');
+		
+		try {
+			workTime = 0;
+			breakTime = 0;
+
+			if (timer > 0) {
+				workTime += timer;
+				total -= timer;
+			} else if (timer < 0) {
+				timer = Math.abs(timer);
+				breakTime += timer/(ratio[0]/ratio[1]);
+				total -= timer/(ratio[0]/ratio[1]);
+			}
+
+			workTime += Math.round((total*ratio[0])/(ratio[0]+ratio[1]));
+			breakTime += Math.round(total-(total*ratio[0])/(ratio[0]+ratio[1]));
+
+			localStorage.removeItem('timer');
+			localStorage.removeItem('total');
+		} catch (error) {
+			alert('I\'m having trouble converting your session. Try clearing your cache & cookies.');
+			console.error(error);
+		}
+	}
 
 	interface Log {
 		timestamp: Date,
@@ -72,7 +91,6 @@
 		addLog('clear');
 		workTime = 0;
 		breakTime = 0;
-		total = 0;
 		time = null;
 		debt = false;
 	};
@@ -98,7 +116,6 @@
 		const i = Number(type === 'break');
 		const m = input[i*2];
 		const s = input[i*2 + 1];
-		let old = type === 'work' ? workTime : breakTime;
 		if (type === 'work') workTime = m*60 + s;
 		else if (type === 'break') breakTime = m*60 + s;
 	};
@@ -117,7 +134,6 @@
 		<h1 class:red={debt}>Break: {format(breakTime)} {(workTime/ratio[0])*ratio[1] - breakTime >= 1 ? `(+${format((workTime/ratio[0])*ratio[1] - breakTime, true)})` : ''}</h1>
 		<br>
 		<h2>Total: {format(workTime + breakTime)} (work + break)</h2>
-		<h2>Net: {format(workTime - breakTime)} (work - break)</h2>
 		<h2>Started: {time?.toLocaleTimeString() || 'null'}</h2>
 		<br>
 	</div>
@@ -154,8 +170,6 @@
 			<li>To switch between work and break, hit the "Do (Work|Break)" button.</li>
 			<li>The site will save the session to your device in case you accidentally close or refresh.</li>
 			<li>Use the "Clear" button to reset your session.</li>
-			<li>"Net" is the difference between the total hours (work + break) and "work debt" (timer will be negative & red)</li>
-			<li>^ On average, "Total" and "Net" will be the same. They will only diverge when you take too long of a break!</li>
 		</ul>
 	</div>
 </main>
