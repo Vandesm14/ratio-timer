@@ -249,7 +249,7 @@
 		margin: 1rem 0.4rem;
 		padding: 0.4rem 0.6rem;
 		transition: background-color 100ms ease-out, border 100ms ease-out;
-		outline: none;
+		/* outline: none; */
 	}
 
 	input {
