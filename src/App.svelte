@@ -57,7 +57,8 @@
 		logs = [{timestamp: new Date(), timers: [workTime, breakTime], action}, ...logs];
 	};
 
-	const toggle = () => {
+	const toggle = (override = !run) => {
+    run = !override;
 		if (run) { // Stop timer
 			addLog('stop');
 			clearInterval(interval);
@@ -87,12 +88,14 @@
 	};
 
 	const clear = () => {
-		logs = [];
-		addLog('clear');
 		workTime = 0;
 		breakTime = 0;
 		time = null;
 		debt = false;
+    input = [0, 0, 0, 0];
+    toggle(false);
+		logs = [];
+		addLog('clear');
 	};
 
 	const format = (seconds, hideAll = false) => {
@@ -132,7 +135,7 @@
 <main>
 	<div>
 		<div class:break={isBreak} class="pointer"><span>▶</span></div>
-		<h1 class:red={debt}>Work: {format(workTime)} {(breakTime*ratio[0]) - (workTime*ratio[1]) > 0 ? `(-${format((breakTime*ratio[0]) - (workTime*ratio[1]), true)})` : ''}</h1>
+		<h1 class:red={debt}>Work: {format(workTime)} {(breakTime*ratio[0]) - (workTime*ratio[1]) > 0 ? `(-${format((breakTime*(ratio[0]/ratio[1])) - workTime, true)})` : ''}</h1>
 		<h1 class:red={debt}>Break: {format(breakTime)} {(workTime/ratio[0])*ratio[1] - breakTime >= 1 ? `(+${format((workTime/ratio[0])*ratio[1] - breakTime, true)})` : ''}</h1>
 		<br>
 		<h2>Total: {format(workTime + breakTime)} (work + break)</h2>
@@ -140,20 +143,20 @@
 		<br>
 	</div>
 	<div class="controls">
-		<span>Work:</span> <input type="number" bind:value={ratio[0]}>
+		<span>Work:</span> <input type="number" min="1" bind:value={ratio[0]}>
 		<span>to</span>
-		<span>Break:</span> <input type="number" bind:value={ratio[1]}>
+		<span>Break:</span> <input type="number" min="1" bind:value={ratio[1]}>
 	</div>
 	<div class="buttons">
 		<button on:click={clear}>Clear</button>
-		<button on:click={toggle}>{!time ? (run ? 'Stop' : 'Start') : (run ? 'Pause' : 'Resume')}</button>
+		<button on:click={()=>toggle()}>{!time ? (run ? 'Stop' : 'Start') : (run ? 'Pause' : 'Resume')}</button>
 		<button on:click={switchMode}>{isBreak ? 'Do Work' : 'Do Break'}</button>
 	</div>
 	<details style="text-align: center;">
 		<summary>Edit Time</summary>
 		<div>
-			Work: <input type="number" on:change={()=>edit('work')} bind:value={input[0]}>m <input type="number" on:change={()=>edit('work')} bind:value={input[1]}>s<br>
-			Break: <input type="number" on:change={()=>edit('break')} bind:value={input[2]}>m <input type="number" on:change={()=>edit('break')} bind:value={input[3]}>s
+			Work: <input type="number" min="0" on:change={()=>edit('work')} bind:value={input[0]}>m <input type="number" min="0" on:change={()=>edit('work')} bind:value={input[1]}>s<br>
+			Break: <input type="number" min="0" on:change={()=>edit('break')} bind:value={input[2]}>m <input type="number" min="0" on:change={()=>edit('break')} bind:value={input[3]}>s
 			<p>Be sure to pause/stop the timer before editing the time!</p>
 		</div>
 	</details>
@@ -248,7 +251,7 @@
 		margin: 1rem 0.4rem;
 		padding: 0.4rem 0.6rem;
 		transition: background-color 100ms ease-out, border 100ms ease-out;
-		outline: none;
+		/* outline: none; */
 	}
 
 	input {
