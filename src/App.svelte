@@ -50,7 +50,7 @@
 	interface Log {
 		timestamp: Date,
 		timers: [number, number],
-		action: 'break' | 'work' | 'start' | 'stop' | 'clear' | 'edit'
+		action: string
 	};
 
 	const addLog = (action: Log['action']) => {
@@ -125,6 +125,14 @@
 		addLog('edit');
 	};
 
+  const restore = (w, b, i?) => {
+    if (!confirm(`Are you sure you want to restore to:\nWork: ${format(w)}\nBreak: ${format(b)}`)) return;
+    workTime = w;
+    breakTime = b;
+    logs = logs.slice(i);
+    addLog('restore');
+  }
+
 	update();
 </script> 
 
@@ -148,7 +156,7 @@
 		<span>Break:</span> <input type="number" min="1" bind:value={ratio[1]}>
 	</div>
 	<div class="buttons">
-		<button on:click={clear}>Clear</button>
+		<button on:click={()=>{if (confirm('Are you sure you want to clear your session?')) clear()}}>Clear</button>
 		<button on:click={()=>toggle()}>{!time ? (run ? 'Stop' : 'Start') : (run ? 'Pause' : 'Resume')}</button>
 		<button on:click={switchMode}>{isBreak ? 'Do Work' : 'Do Break'}</button>
 	</div>
@@ -163,8 +171,10 @@
 	<details class="logs">
 		<summary>Logs</summary>
 		<div>
-			{#each logs as log}
+			{#each logs as log, i}
 				<p>{new Date(log.timestamp).toLocaleTimeString()} - Action: "{log.action}"<br>{format(log.timers[0])} work<br>{format(log.timers[1])} break</p>
+        <button style="margin-top: 0" on:click={()=>restore(...log.timers, i)}>Restore</button>
+        <button style="margin-top: 0" on:click={()=>{if (confirm('Are you sure you want to remove this log?')) logs = logs.filter((el, ei) => ei !== i)}}>X</button>
 			{/each}
 		</div>
 	</details>
