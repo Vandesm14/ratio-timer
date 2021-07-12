@@ -145,7 +145,7 @@
 </script> 
 
 <svelte:head>
-	<title>{format(isBreak ? breakTime*(ratio[1]/ratio[0]) : workTime) + (isBreak ? ' - Break ' : ' - Work ')} | Ratio Timer</title>
+	<title>{format(isBreak ? breakTime + ' - Break ' : workTime + ' - Work ')} | Ratio Timer</title>
 </svelte:head>
 
 <main>
