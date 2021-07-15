@@ -22,7 +22,7 @@
 	let lastBreakTime = breakTime;
 	let lastWorkTime = workTime;
 
-	if (localStorage.getItem('total')) { // old timer system
+	if (localStorage.getItem('total')) { // Old timer system
 		console.warn('Ratio Timer: Outdated client, attempting to upgrade...');
 		let total = +localStorage.getItem('total');
 		let timer = +localStorage.getItem('timer');
@@ -52,10 +52,9 @@
 		}
 	}
 
-	if (localStorage.getItem('time')) { // old data system
+	if (localStorage.getItem('time')) { // Old data system
 		console.warn('Ratio Timer: Outdated client, attempting to upgrade...');
 		let time = new Date(localStorage.getItem('time'));
-
 		data = {...data, time, lastRun: null};
 		
 		localStorage.removeItem('time');
@@ -91,10 +90,16 @@
 
 			if (!data.time) data.time = new Date();
 			const tick = () => {
+				let diff = +new Date() - +data.lastRun
+				console.log(diff);
+				if (diff < 1000) { // If difference is less than 1000 from switching modes
+					diff = 1000;
+					data.lastRun = new Date(+new Date() - 1000);
+				}
 				if (data.isBreak) {
-					breakTime = lastBreakTime + Math.round((+new Date() - +data.lastRun)/1000);
+					breakTime = lastBreakTime + Math.round((diff)/1000);
 				} else {
-					workTime = lastWorkTime + Math.round((+new Date() - +data.lastRun)/1000);
+					workTime = lastWorkTime + Math.round((diff)/1000);
 				}
 
 				update();
@@ -130,7 +135,7 @@
 		let isNegative = seconds < 0;
 		seconds = Math.abs(seconds);
 
-		hideAll = false; // disable for now
+		hideAll = false; // DEV: disable for now
 
 		let h = Math.trunc(seconds / 60 / 60);
 		let m = Math.trunc(seconds / 60 % 60);
@@ -236,7 +241,7 @@
 			<li>Your session will be saved to your device in case you accidentally close or refresh!</li>
 			<li>Use the "Clear" button to reset your session.</li>
       <li>"Total" reports both the total time and the total time plus extra break time (inside the parenthesis)</li>
-			<li>Use the "Trim" button under "Edit Time" to condense your time down to unbalanced time (remove time that conforms to the ratio).</li>
+			<!-- <li>Use the "Trim" button under "Edit Time" to condense your time down to unbalanced time (remove time that conforms to the ratio).</li> -->
 		</ul>
 	</div>
 	<center>
