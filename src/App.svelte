@@ -130,12 +130,14 @@
 		let isNegative = seconds < 0;
 		seconds = Math.abs(seconds);
 
+		hideAll = false; // disable for now
+
 		let h = Math.trunc(seconds / 60 / 60);
 		let m = Math.trunc(seconds / 60 % 60);
 		let s = Math.trunc(seconds % 60);
 
-		if (hideAll) return `${isNegative ? '-' : ''}${h ? (h + 'h ') : ''}${m ? m + 'm ' : ''}${s || 0}s`;
-		else return `${isNegative ? '-' : ''}${h ? (h + 'h ') : ''}${m}m ${s < 10 ? '0' + s : s}s`;
+		if (hideAll) return `${isNegative ? '-' : ''}${h ? (h + 'h ') : ''}${m ? m + 'm ' : ''}${s < 10 ? '0' + s : s}s`;
+		else return `${isNegative ? '-' : ''}${h ? (h + 'h ') : ''}${m < 10 && h ? '0' + m : m}m ${s < 10 ? '0' + s : s}s`;
 	};
 
 	const switchMode = () => {
@@ -157,7 +159,7 @@
 		addLog('edit');
 	};
 
-  const restore = (w, b, i?) => {
+  const restore = (w: number, b: number, i: number) => {
     if (!confirm(`Are you sure you want to restore to:\nWork: ${format(w)}\nBreak: ${format(b)}`)) return;
     workTime = w;
     breakTime = b;
