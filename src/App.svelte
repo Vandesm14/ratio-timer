@@ -209,13 +209,13 @@
 		<button on:click={()=>toggle()}>{!data.time ? (run ? 'Stop' : 'Start') : (run ? 'Pause' : 'Resume')}</button>
 		<button on:click={switchMode}>{data.isBreak ? 'Do Work' : 'Do Break'}</button>
 	</div>
-	<details style="text-align: center;">
+	<details class="edit" style="text-align: center;">
 		<summary>Edit Time</summary>
 		<div>
 			Work: <input type="number" min="0" on:change={()=>edit('work')} bind:value={input[0]}>m <input type="number" min="0" on:change={()=>edit('work')} bind:value={input[1]}>s<br>
 			Break: <input type="number" min="0" on:change={()=>edit('break')} bind:value={input[2]}>m <input type="number" min="0" on:change={()=>edit('break')} bind:value={input[3]}>s
 			<p>Be sure to pause/stop the timer before editing the time!</p>
-			<button on:click={()=>{if (confirm('Are you sure you want to trim your work and break hours?')) trimHours()}}>Trim</button>
+			<!-- <button on:click={()=>{if (confirm('Are you sure you want to trim your work and break hours?')) trimHours()}}>Trim</button> -->
 		</div>
 	</details>
 	<details class="logs">
@@ -239,9 +239,20 @@
 			<li>Use the "Trim" button under "Edit Time" to condense your time down to unbalanced time (remove time that conforms to the ratio).</li>
 		</ul>
 	</div>
+	<center>
+		<a href="mailto:vandesm14@gmail.com">Contact</a>
+	</center>
 </main>
 
 <style>
+	a {
+		color: #fff;
+		transition: color 150ms ease-out;
+	}
+	a:hover {
+		color: #4f93e0;
+	}
+
 	main {
 		font-family: Arial, Helvetica, sans-serif;
 		display: flex;
@@ -329,6 +340,13 @@
 	button:hover, input:focus {
 		background-color: #343d47;
 		border: 1px solid #c6ccd3;
+	}
+
+	.edit > div, .logs > div {
+		overflow-y: auto;
+		max-height: calc(100vh);
+		background-color: #18202B;
+		padding: 0.3rem;
 	}
 
 	.logs {
