@@ -6,19 +6,25 @@
 
 	let input = [0, 0, 0, 0];
 
-	let time = localStorage.getItem('time') ? new Date(localStorage.getItem('time')) : null;
-	$: time ? localStorage.setItem('time', ''+time) : localStorage.removeItem('time');
+	let ratio = localStorage.getItem('ratio') ? JSON.parse(localStorage.getItem('ratio')) : [5, 1];
+	$: localStorage.setItem('ratio', JSON.stringify(ratio));
+
+	let data: Data = localStorage.getItem('data') ? JSON.parse(localStorage.getItem('data')) : {time: null, lastRun: null};
+	$: localStorage.setItem('data', JSON.stringify(data));
+
+	if (data.time) data.time = new Date(data.time);
+
+	let logs: Log[] = localStorage.getItem('logs') ? JSON.parse(localStorage.getItem('logs')) : [];
+	$: localStorage.setItem('logs', JSON.stringify(logs));
 
 	let [workTime, breakTime] = localStorage.getItem('timers') ? JSON.parse(localStorage.getItem('timers')) : [0, 0];
 	$: localStorage.setItem('timers', JSON.stringify([workTime, breakTime]));
 
-	let ratio = localStorage.getItem('ratio') ? JSON.parse(localStorage.getItem('ratio')) : [5, 1];
-	$: localStorage.setItem('ratio', JSON.stringify(ratio));
-	
-	let logs: Log[] = localStorage.getItem('logs') ? JSON.parse(localStorage.getItem('logs')) : [];
-	$: localStorage.setItem('logs', JSON.stringify(logs));
+	let lastBreakTime = breakTime;
+	let lastWorkTime = workTime;
 
-	if (localStorage.getItem('total')) {
+	if (localStorage.getItem('total')) { // old timer system
+		console.warn('Ratio Timer: Outdated client, attempting to upgrade...');
 		let total = +localStorage.getItem('total');
 		let timer = +localStorage.getItem('timer');
 		alert('It looks like you\'re using an older verison. I\'ll do my best to convert your session!');
@@ -47,10 +53,24 @@
 		}
 	}
 
+	if (localStorage.getItem('time')) { // old data system
+		console.warn('Ratio Timer: Outdated client, attempting to upgrade...');
+		let time = new Date(localStorage.getItem('time'));
+
+		data = {...data, time, lastRun: null};
+		
+		localStorage.removeItem('time');
+	}
+
 	interface Log {
 		timestamp: Date,
 		timers: [number, number],
 		action: string
+	};
+
+	interface Data {
+		time: Date,
+		lastRun: Date
 	};
 
 	const addLog = (action: Log['action']) => {
@@ -64,16 +84,24 @@
 			clearInterval(interval);
 		} else { // Start timer
 			addLog('start');
-			if (!time) time = new Date();
-			interval = setInterval(() => {
+
+			lastBreakTime = breakTime;
+			lastWorkTime = workTime;
+			data.lastRun = new Date();
+
+			if (!data.time) data.time = new Date();
+			const tick = () => {
 				if (isBreak) {
-					breakTime += 1;
+					breakTime = lastBreakTime + Math.round((+new Date() - +data.lastRun)/1000);
 				} else {
-					workTime += 1;
+					workTime = lastWorkTime + Math.round((+new Date() - +data.lastRun)/1000);
 				}
 
 				update();
-			}, 1000);
+			};
+			tick();
+
+			interval = setInterval(tick, 1000);
 		}
 		run = !run;
 	};
@@ -93,7 +121,7 @@
 		addLog('clear');
 		workTime = 0;
 		breakTime = 0;
-		time = null;
+		data.time = null;
 		debt = false;
     input = [0, 0, 0, 0];
 	};
@@ -111,6 +139,10 @@
 	};
 
 	const switchMode = () => {
+		data.lastRun = new Date();
+		lastBreakTime = breakTime;
+		lastWorkTime = workTime;
+
 		isBreak = !isBreak;
 		addLog(isBreak ? 'break' : 'work');
 	};
@@ -155,7 +187,7 @@
 		<h1 class:red={debt}>Break: {format(breakTime)} {(workTime/ratio[0])*ratio[1] - breakTime >= 1 ? `(+${format((workTime/ratio[0])*ratio[1] - breakTime, true)})` : ''}</h1>
 		<br>
 		<h2>Total: {format(workTime + breakTime)} ({format(workTime + breakTime + (workTime/ratio[0])*ratio[1] - breakTime)})</h2>
-		<h2>Started: {time?.toLocaleTimeString() || 'null'}</h2>
+		<h2>Started: {data.time?.toLocaleTimeString() || 'null'}</h2>
 		<br>
 	</div>
 	<div class="controls">
@@ -165,7 +197,7 @@
 	</div>
 	<div class="buttons">
 		<button on:click={()=>{if (confirm('Are you sure you want to clear your session?')) clear()}}>Clear</button>
-		<button on:click={()=>toggle()}>{!time ? (run ? 'Stop' : 'Start') : (run ? 'Pause' : 'Resume')}</button>
+		<button on:click={()=>toggle()}>{!data.time ? (run ? 'Stop' : 'Start') : (run ? 'Pause' : 'Resume')}</button>
 		<button on:click={switchMode}>{isBreak ? 'Do Work' : 'Do Break'}</button>
 	</div>
 	<details style="text-align: center;">
