@@ -90,9 +90,8 @@
 
 			if (!data.time) data.time = new Date();
 			const tick = () => {
-				let diff = +new Date() - +data.lastRun
-				console.log(diff);
-				if (diff < 1000) { // If difference is less than 1000 from switching modes
+				let diff = +new Date() - +data.lastRun;
+				if (diff < 1000 && logs[0].action !== 'start') { // If difference is less than 1000 from switching modes
 					diff = 1000;
 					data.lastRun = new Date(+new Date() - 1000);
 				}
