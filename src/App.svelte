@@ -153,8 +153,15 @@
 		const i = Number(type === 'break');
 		const m = input[i*2];
 		const s = input[i*2 + 1];
-		if (type === 'work') workTime = m*60 + s;
-		else if (type === 'break') breakTime = m*60 + s;
+		const diff = Math.round((+new Date() - +data.lastRun) / 1000);
+
+		if (type === 'work') {
+			workTime = m*60 + s;
+			lastWorkTime = workTime - diff;
+		}	else if (type === 'break') {
+			breakTime = m*60 + s;
+			lastBreakTime = breakTime - diff;
+		}
 		
 		addLog('edit');
 	};
