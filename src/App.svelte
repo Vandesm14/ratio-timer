@@ -1,7 +1,6 @@
 <script lang="ts">
 	let interval;
 	let run = false;
-	let isBreak = false;
 	let debt = false;
 
 	let input = [0, 0, 0, 0];
@@ -9,7 +8,7 @@
 	let ratio = localStorage.getItem('ratio') ? JSON.parse(localStorage.getItem('ratio')) : [5, 1];
 	$: localStorage.setItem('ratio', JSON.stringify(ratio));
 
-	let data: Data = localStorage.getItem('data') ? JSON.parse(localStorage.getItem('data')) : {time: null, lastRun: null};
+	let data: Data = localStorage.getItem('data') ? JSON.parse(localStorage.getItem('data')) : {time: null, lastRun: null, isBreak: false};
 	$: localStorage.setItem('data', JSON.stringify(data));
 
 	if (data.time) data.time = new Date(data.time);
@@ -70,7 +69,8 @@
 
 	interface Data {
 		time: Date,
-		lastRun: Date
+		lastRun: Date,
+		isBreak: boolean
 	};
 
 	const addLog = (action: Log['action']) => {
@@ -91,7 +91,7 @@
 
 			if (!data.time) data.time = new Date();
 			const tick = () => {
-				if (isBreak) {
+				if (data.isBreak) {
 					breakTime = lastBreakTime + Math.round((+new Date() - +data.lastRun)/1000);
 				} else {
 					workTime = lastWorkTime + Math.round((+new Date() - +data.lastRun)/1000);
@@ -143,8 +143,8 @@
 		lastBreakTime = breakTime;
 		lastWorkTime = workTime;
 
-		isBreak = !isBreak;
-		addLog(isBreak ? 'break' : 'work');
+		data.isBreak = !data.isBreak;
+		addLog(data.isBreak ? 'break' : 'work');
 	};
 	
 	const edit = (type: 'work' | 'break') => {
@@ -177,12 +177,12 @@
 </script> 
 
 <svelte:head>
-	<title>{isBreak ? format(breakTime) + ' - Break ' : format(workTime) + ' - Work '} | Ratio Timer</title>
+	<title>{data.isBreak ? format(breakTime) + ' - Break ' : format(workTime) + ' - Work '} | Ratio Timer</title>
 </svelte:head>
 
 <main>
 	<div>
-		<div class:break={isBreak} class="pointer"><span>▶</span></div>
+		<div class:break={data.isBreak} class="pointer"><span>▶</span></div>
 		<h1 class:red={debt}>Work: {format(workTime)} {(breakTime*ratio[0]) - (workTime*ratio[1]) > 0 ? `(-${format((breakTime*(ratio[0]/ratio[1])) - workTime, true)})` : ''}</h1>
 		<h1 class:red={debt}>Break: {format(breakTime)} {(workTime/ratio[0])*ratio[1] - breakTime >= 1 ? `(+${format((workTime/ratio[0])*ratio[1] - breakTime, true)})` : ''}</h1>
 		<br>
@@ -198,7 +198,7 @@
 	<div class="buttons">
 		<button on:click={()=>{if (confirm('Are you sure you want to clear your session?')) clear()}}>Clear</button>
 		<button on:click={()=>toggle()}>{!data.time ? (run ? 'Stop' : 'Start') : (run ? 'Pause' : 'Resume')}</button>
-		<button on:click={switchMode}>{isBreak ? 'Do Work' : 'Do Break'}</button>
+		<button on:click={switchMode}>{data.isBreak ? 'Do Work' : 'Do Break'}</button>
 	</div>
 	<details style="text-align: center;">
 		<summary>Edit Time</summary>
