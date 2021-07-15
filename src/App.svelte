@@ -239,7 +239,9 @@
 		flex-direction: column;
 		align-items: center;
 		font-size: 1.2rem;
-		width: min(90vw, 60vh);
+		min-width: min-content;
+		width: 60vh;
+		max-width: 90vw;
 		margin: 0 auto;
 	}
 
@@ -266,6 +268,7 @@
 
 	h1 {
 		transition: color 100ms ease-out;
+		min-width: max-content;
 	}
 	.red {
 		color: rgb(255, 74, 74);
