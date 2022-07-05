@@ -27,7 +27,7 @@
 		let total = +localStorage.getItem('total');
 		let timer = +localStorage.getItem('timer');
 		alert('It looks like you\'re using an older verison. I\'ll do my best to convert your session!');
-		
+
 		try {
 			workTime = 0;
 			breakTime = 0;
@@ -56,7 +56,7 @@
 		console.warn('Ratio Timer: Outdated client, attempting to upgrade...');
 		let time = new Date(localStorage.getItem('time'));
 		data = {...data, time, lastRun: null};
-		
+
 		localStorage.removeItem('time');
 	}
 
@@ -111,7 +111,7 @@
 	};
 
 	$: debt = (workTime*ratio[1]) < (breakTime*ratio[0]);
-	
+
 	const update = () => {
 		input[0] = Math.trunc(workTime/60);
 		input[1] = Math.trunc(workTime%60);
@@ -128,6 +128,7 @@
 		data.time = null;
 		debt = false;
     input = [0, 0, 0, 0];
+    data.isBreak = false;
 	};
 
 	const format = (seconds, hideAll = false) => {
@@ -152,7 +153,7 @@
 		data.isBreak = !data.isBreak;
 		addLog(data.isBreak ? 'break' : 'work');
 	};
-	
+
 	const edit = (type: 'work' | 'break') => {
 		const i = Number(type === 'break');
 		const m = input[i*2];
@@ -166,7 +167,7 @@
 			breakTime = m*60 + s;
 			lastBreakTime = breakTime - diff;
 		}
-		
+
 		addLog('edit');
 	};
 
@@ -187,7 +188,7 @@
 		breakTime = 0;
 		update();
 	};
-</script> 
+</script>
 
 <svelte:head>
 	<title>{data.isBreak ? format(breakTime) + ' - Break ' : format(workTime) + ' - Work '} | Ratio Timer</title>
